@@ -34,12 +34,6 @@ _Note: Screenshots provide immediate visual context for recruiters and reviewers
 ![System Under Attack](public/assets/under_attack.png)
   _The interface responding to a simulated HTTP Flood, showcasing telemetry spikes and critical alerts._
 
-**Recommended Screenshots to Include in the `/assets/` folder:**
-
-1. `dashboard.png`: A clean, full-screen capture of the dashboard without active alerts.
-2. `under_attack.png`: A full-screen capture immediately after triggering an attack simulation, showing red alerts and chart spikes.
-3. `incident_report.png`: A screenshot showing the PDF print preview of the incident report.
-
 ## Project Documentation
 
 Detailed documentation, certification, and project status updates are maintained in separate, organized modules for a cleaner architecture:
