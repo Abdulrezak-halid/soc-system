@@ -1,5 +1,5 @@
-import React from 'react';
-import { cn } from '../lib/utils';
+import React from "react";
+import { cn } from "../lib/utils";
 
 export function MetricBlock({ label, value, sub, progress, variant }: any) {
   const isThreat = variant === "threat";
@@ -13,7 +13,7 @@ export function MetricBlock({ label, value, sub, progress, variant }: any) {
       <span
         className={cn(
           "text-[9px] font-mono uppercase tracking-tighter",
-          isThreat ? "text-red-400" : "text-[#6B7280]",
+          isThreat ? "text-red-400" : "text-text-dim",
         )}
       >
         {label}
@@ -36,7 +36,7 @@ export function MetricBlock({ label, value, sub, progress, variant }: any) {
           {sub}
         </span>
       ) : progress !== undefined ? (
-        <div className="h-1 w-full bg-[#1F2937] mt-1 overflow-hidden rounded-full">
+        <div className="h-1 w-full bg-border-dim mt-1 overflow-hidden rounded-full">
           <div
             className={cn(
               "h-full transition-all duration-1000",

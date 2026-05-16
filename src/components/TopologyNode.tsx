@@ -1,5 +1,5 @@
-import React from 'react';
-import { cn } from '../lib/utils';
+import React from "react";
+import { cn } from "../lib/utils";
 
 export function TopologyNode({ label, ip, active, variant }: any) {
   const colorClass =
