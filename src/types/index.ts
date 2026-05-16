@@ -10,6 +10,23 @@ export interface SecurityAlert {
   status: "active" | "mitigated" | "investigating";
 }
 
+export interface RawSecurityEvent {
+  id: string;
+  timestamp: string;
+  eventId: number;
+  sourceIp: string;
+  targetIp: string;
+  protocol: "TCP" | "UDP" | "HTTP" | "SSH";
+  action: "allowed" | "blocked" | "flagged";
+  signature: string;
+}
+
+export interface AttackScenario {
+  alert: SecurityAlert;
+  events: RawSecurityEvent[];
+  trafficSpike: number;
+}
+
 export interface TrafficStats {
   packetsPerSecond: number;
   activeConnections: number;

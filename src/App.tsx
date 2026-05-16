@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "./lib/utils";
-import { SecurityAlert, TrafficStats } from "./types";
+import { RawSecurityEvent, SecurityAlert, TrafficStats } from "./types";
 import { triggerAttack } from "./lib/simulation";
 import { TopologyNode } from "./components/TopologyNode";
 import { StatusLine } from "./components/StatusLine";
@@ -19,13 +19,23 @@ import { MetricBlock } from "./components/MetricBlock";
 
 export default function App() {
   const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
+  const [rawEvents, setRawEvents] = useState<RawSecurityEvent[]>([]);
   const [stats, setStats] = useState<TrafficStats>({
     packetsPerSecond: 0,
     activeConnections: 0,
     blockedThreats: 0,
   });
   const [trafficHistory, setTrafficHistory] = useState<any[]>([]);
+  const [attackBoost, setAttackBoost] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  const activeAlerts = alerts.filter(
+    (alert) => alert.status === "active",
+  ).length;
+  const criticalThreats = alerts.filter(
+    (alert) => alert.severity === "critical" || alert.severity === "high",
+  ).length;
+  const onlineHosts = 4;
 
   useEffect(() => {
     // Clock
@@ -34,12 +44,15 @@ export default function App() {
     // Mock Traffic Generator
     const trafficTimer = setInterval(() => {
       const newStats = {
-        packetsPerSecond: 10 + Math.floor(Math.random() * 20),
-        activeConnections: 5 + Math.floor(Math.random() * 5),
-        blockedThreats: alerts.length,
+        packetsPerSecond: 18 + Math.floor(Math.random() * 22) + attackBoost,
+        activeConnections:
+          6 + Math.floor(Math.random() * 7) + Math.round(attackBoost / 18),
+        blockedThreats: rawEvents.filter((event) => event.action === "blocked")
+          .length,
       };
 
       setStats(newStats);
+      setAttackBoost((current) => Math.max(0, current - 18));
       setTrafficHistory((prev) => {
         const next = [
           ...prev,
@@ -56,12 +69,14 @@ export default function App() {
       clearInterval(timer);
       clearInterval(trafficTimer);
     };
-  }, [alerts]);
+  }, [attackBoost, rawEvents]);
 
   const simulateAttack = (type: string) => {
-    const newAlert = triggerAttack(type);
-    if (newAlert) {
-      setAlerts((prev) => [newAlert, ...prev]);
+    const scenario = triggerAttack(type);
+    if (scenario) {
+      setAlerts((prev) => [scenario.alert, ...prev]);
+      setRawEvents((prev) => [...scenario.events, ...prev].slice(0, 80));
+      setAttackBoost(scenario.trafficSpike);
     }
   };
 
@@ -173,25 +188,26 @@ export default function App() {
         <div className="grow flex flex-col overflow-hidden relative">
           <div className="h-28 border-b border-border-dim grid grid-cols-1 md:grid-cols-4 divide-x divide-border-dim shrink-0 bg-bg-deep">
             <MetricBlock
-              label="Packets / Sec"
-              value={stats.packetsPerSecond.toLocaleString()}
-              progress={30}
+              label="Active Alerts"
+              value={activeAlerts.toString()}
+              variant={activeAlerts > 0 ? "threat" : undefined}
+              sub="Open incidents"
             />
             <MetricBlock
-              label="Active Threats"
-              value={alerts.length.toString()}
-              variant="threat"
-              sub="Security alerts logged"
+              label="Critical Threats"
+              value={criticalThreats.toString()}
+              variant={criticalThreats > 0 ? "threat" : undefined}
+              sub="High + critical"
             />
             <MetricBlock
-              label="Avg Packet Rate"
-              value="1.2k p/s"
-              progress={75}
+              label="Total Events"
+              value={rawEvents.length.toLocaleString()}
+              sub={`${stats.blockedThreats} blocked events`}
             />
             <MetricBlock
-              label="Primary Target"
-              value="192.168.56.20"
-              sub="Ubuntu Prod Server"
+              label="Online Hosts"
+              value={onlineHosts.toString()}
+              sub={`${stats.activeConnections} live connections`}
             />
           </div>
 
@@ -199,7 +215,8 @@ export default function App() {
           <div className="px-6 py-4 bg-bg-panel/30 border-b border-border-dim h-40 shrink-0">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest">
-                Global Ingress Stream
+                Global Ingress Stream //{" "}
+                {stats.packetsPerSecond.toLocaleString()} PPS
               </span>
               <Activity className="w-3 h-3 text-red-500 animate-pulse" />
             </div>
@@ -251,72 +268,143 @@ export default function App() {
             </div>
           </div>
 
-          {/* Alert Stream Table */}
-          <div className="grow flex flex-col overflow-hidden bg-bg-deep">
-            <div className="bg-bg-panel px-4 py-2 border-b border-border-dim flex justify-between items-center shrink-0">
-              <span className="text-xs font-mono font-bold uppercase tracking-widest text-white">
-                Incident Evidence Stream
-              </span>
-              <div className="flex gap-4">
-                <span className="text-[10px] font-mono text-red-500 font-bold">
-                  [ACTIVE:{" "}
-                  {
-                    alerts.filter(
-                      (a) => a.severity === "critical" || a.severity === "high",
-                    ).length
-                  }
-                  ]
+          {/* Alert and raw event streams */}
+          <div className="grow grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] overflow-hidden bg-bg-deep">
+            <section className="flex flex-col overflow-hidden border-r border-border-dim">
+              <div className="bg-bg-panel px-4 py-2 border-b border-border-dim flex justify-between items-center shrink-0">
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-white">
+                  Security Alerts
                 </span>
-                <span className="text-[10px] font-mono text-white/40 tracking-tighter">
-                  SYSLOG_FEED_V4
+                <div className="flex gap-4">
+                  <span className="text-[10px] font-mono text-red-500 font-bold">
+                    [ACTIVE: {criticalThreats}]
+                  </span>
+                  <span className="text-[10px] font-mono text-white/40 tracking-tighter">
+                    CORRELATION_ENGINE
+                  </span>
+                </div>
+              </div>
+
+              <div className="grow overflow-auto custom-scrollbar font-mono text-[11px]">
+                <table className="w-full border-collapse">
+                  <thead className="sticky top-0 bg-bg-deep/95 backdrop-blur-sm z-10 shadow-sm shadow-black">
+                    <tr className="text-left text-[#4B5563] border-b border-border-dim uppercase text-[10px]">
+                      <th className="p-3 w-1/6">Timestamp</th>
+                      <th className="p-3 w-28">Priority</th>
+                      <th className="p-3 w-32">Source</th>
+                      <th className="p-3">Alert Pattern</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-dim">
+                    <AnimatePresence initial={false}>
+                      {alerts.map((alert) => (
+                        <motion.tr
+                          key={alert.id}
+                          initial={{ opacity: 0, scaleY: 0 }}
+                          animate={{ opacity: 1, scaleY: 1 }}
+                          className={cn(
+                            "transition-colors group",
+                            alert.severity === "critical"
+                              ? "bg-red-950/10 text-red-400 hover:bg-red-950/20"
+                              : alert.severity === "high"
+                                ? "bg-amber-950/10 text-amber-500 hover:bg-amber-950/20"
+                                : "text-slate-300 hover:bg-white/5",
+                          )}
+                        >
+                          <td className="p-3 whitespace-nowrap text-white/50">
+                            {new Date(alert.timestamp).toLocaleTimeString()}
+                          </td>
+                          <td className="p-3 font-bold uppercase">
+                            {alert.severity}
+                          </td>
+                          <td className="p-3 tracking-tighter">
+                            {alert.sourceIp}
+                          </td>
+                          <td className="p-3 line-clamp-1">
+                            {alert.type}: {alert.message}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                    {alerts.length === 0 && (
+                      <tr>
+                        <td
+                          className="p-6 text-center text-text-dim"
+                          colSpan={4}
+                        >
+                          No correlated alerts yet. Launch a simulation to
+                          generate findings.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section className="flex flex-col overflow-hidden">
+              <div className="bg-bg-panel px-4 py-2 border-b border-border-dim flex justify-between items-center shrink-0">
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-white">
+                  Raw Security Events
+                </span>
+                <span className="text-[10px] font-mono text-blue-400 font-bold">
+                  [{rawEvents.length} EVENTS]
                 </span>
               </div>
-            </div>
 
-            <div className="grow overflow-auto custom-scrollbar font-mono text-[11px]">
-              <table className="w-full border-collapse">
-                <thead className="sticky top-0 bg-bg-deep/95 backdrop-blur-sm z-10 shadow-sm shadow-black">
-                  <tr className="text-left text-[#4B5563] border-b border-border-dim uppercase text-[10px]">
-                    <th className="p-3 w-1/6">Timestamp</th>
-                    <th className="p-3 w-32">Priority</th>
-                    <th className="p-3 w-1/4">Source IP</th>
-                    <th className="p-3">Alert Pattern</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-dim">
-                  <AnimatePresence initial={false}>
-                    {alerts.map((alert) => (
-                      <motion.tr
-                        key={alert.id}
-                        initial={{ opacity: 0, scaleY: 0 }}
-                        animate={{ opacity: 1, scaleY: 1 }}
-                        className={cn(
-                          "transition-colors group",
-                          alert.severity === "critical"
-                            ? "bg-red-950/10 text-red-400 hover:bg-red-950/20"
-                            : alert.severity === "high"
-                              ? "bg-amber-950/10 text-amber-500 hover:bg-amber-950/20"
-                              : "text-slate-300 hover:bg-white/5",
-                        )}
+              <div className="grow overflow-auto custom-scrollbar font-mono text-[11px]">
+                <table className="w-full border-collapse">
+                  <thead className="sticky top-0 bg-bg-deep/95 backdrop-blur-sm z-10 shadow-sm shadow-black">
+                    <tr className="text-left text-[#4B5563] border-b border-border-dim uppercase text-[10px]">
+                      <th className="p-3 w-24">Event ID</th>
+                      <th className="p-3 w-20">Proto</th>
+                      <th className="p-3 w-28">Action</th>
+                      <th className="p-3">Signature</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-dim">
+                    {rawEvents.map((event) => (
+                      <tr
+                        key={event.id}
+                        className="text-slate-300 transition-colors hover:bg-white/5"
                       >
-                        <td className="p-3 whitespace-nowrap text-white/50">
-                          {new Date(alert.timestamp).toLocaleTimeString()}
+                        <td className="p-3 text-white/50">#{event.eventId}</td>
+                        <td className="p-3 text-blue-400">{event.protocol}</td>
+                        <td
+                          className={cn(
+                            "p-3 font-bold uppercase",
+                            event.action === "blocked"
+                              ? "text-red-400"
+                              : event.action === "flagged"
+                                ? "text-amber-400"
+                                : "text-green-400",
+                          )}
+                        >
+                          {event.action}
                         </td>
-                        <td className="p-3 font-bold uppercase">
-                          {alert.severity}
+                        <td className="p-3">
+                          <div className="line-clamp-1">{event.signature}</div>
+                          <div className="text-[9px] text-text-dim">
+                            {event.sourceIp} {"->"} {event.targetIp}
+                          </div>
                         </td>
-                        <td className="p-3 tracking-tighter">
-                          {alert.sourceIp}
-                        </td>
-                        <td className="p-3 line-clamp-1">
-                          {alert.type}: {alert.message}
-                        </td>
-                      </motion.tr>
+                      </tr>
                     ))}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
+                    {rawEvents.length === 0 && (
+                      <tr>
+                        <td
+                          className="p-6 text-center text-text-dim"
+                          colSpan={4}
+                        >
+                          Raw packet and log events will appear here before
+                          alerts are correlated.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
 
           {/* Console Footer */}
