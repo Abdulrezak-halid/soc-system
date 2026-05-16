@@ -1,56 +1,90 @@
-# Mini SOC System 🛡️
+# Mini SOC System
 
-A frontend simulation of a Security Operations Center (SOC) dashboard. This project provides a fully static UI with simulated real-time traffic statistics and security alerts, suitable for demonstration purposes.
+A frontend simulation of a Security Operations Center (SOC) dashboard. This project provides a fully static UI with simulated real-time traffic statistics and security alerts, suitable for demonstration, educational, and professional portfolio purposes.
 
-## Features ✨
 
-- **Mock Attack Simulation**: Trigger Port Scans, SSH Brute Force, and HTTP Floods internally to demonstrate UI responsiveness.
-- **Dynamic Traffic Monitoring**: Visualizes mocked network traffic streams using Recharts area charts.
-- **Incident Evidence Stream**: Live-updating log table of simulated security incidents.
-- **Topology View**: Visual mapping of the simulated network environment.
-- **Vercel-Ready**: Entirely client-side deployment architecture, perfectly configured for scaling on Vercel Edge.
+## Table of Contents
 
-## Tech Stack 🛠️
+- [Architecture and Features](#architecture-and-features)
+- [Visual Overview](#visual-overview)
+- [Project Documentation](#project-documentation)
+- [Technical Stack](#technical-stack)
+- [Local Development](#local-development)
+- [Deployment](#deployment)
 
-- **React 19**
-- **Vite**
-- **Tailwind CSS v4**
-- **Framer Motion**
-- **Recharts**
-- **Lucide React**
+## Architecture and Features
 
-## Getting Started 🚀
+- **Threat Simulation Engine**: Client-side generation of Port Scans, SSH Brute Force, and HTTP Flood (DoS) attacks.
+- **Real-Time Telemetry**: Dynamic charting of network metrics using Recharts.
+- **SOC Metrics Dashboard**: Active Alerts, Critical Threats, Total Events, and Online Hosts counters for quick analyst triage.
+- **Incident Evidence Stream**: Active logging and categorization of simulated security alerts.
+- **Raw Security Events**: Frontend-only packet/log event generation that shows the evidence behind each correlated alert.
+- **Topology Mapping**: Visual representation of the mock network environment.
+- **Automated Reporting**: Built-in capability to generate and export Incident Reports in PDF format directly from the dashboard.
+
+## Visual Overview
+
+_Note: Screenshots provide immediate visual context for recruiters and reviewers. Replace the placeholders below once you take the screenshots._
+
+![Main Dashboard Overview](public/assets/dashboard.png)
+### **[View Live Demo](https://soc-system-omega.vercel.app/)** 👁️
+  
+  _The primary monitoring interface displaying baseline traffic and topology._
+
+![System Under Attack](public/assets/under_attack.png)
+  _The interface responding to a simulated HTTP Flood, showcasing telemetry spikes and critical alerts._
+
+**Recommended Screenshots to Include in the `/assets/` folder:**
+
+1. `dashboard.png`: A clean, full-screen capture of the dashboard without active alerts.
+2. `under_attack.png`: A full-screen capture immediately after triggering an attack simulation, showing red alerts and chart spikes.
+3. `incident_report.png`: A screenshot showing the PDF print preview of the incident report.
+
+## Project Documentation
+
+Detailed documentation, certification, and project status updates are maintained in separate, organized modules for a cleaner architecture:
+
+- **[Project Status and Milestones](docs/STATUS.md)**: Current build status, features, and future roadmap.
+- **[Course Certification and Diploma](docs/DIPLOMA.md)**: Documentation regarding background studies and project validity.
+- **[Example Incident Report (PDF)](public/assets/incident_report.pdf)**: Example of the system's automated PDF export feature.
+
+## Technical Stack
+
+- **React 19**: Modern component-based UI architecture.
+- **Vite**: High-performance build tool and development server.
+- **Tailwind CSS v4**: Utility-first styling framework.
+- **Framer Motion**: Fluid UI animations and transitions.
+- **Recharts**: Data visualization.
+- **Lucide React**: Vector typography and iconography.
+
+## Local Development
 
 To run this project locally:
 
 1. **Install Dependencies:**
-   \`\`\`bash
+
+   ```bash
    npm install
-   \`\`\`
+   ```
 
 2. **Start the Development Server:**
-   \`\`\`bash
+
+   ```bash
    npm run dev
-   \`\`\`
-   Navigate to the local URL provided in the console.
+   ```
+
+   Navigate to the local URL provided in your terminal.
 
 3. **Build for Production:**
-   \`\`\`bash
+   ```bash
    npm run build
-   \`\`\`
+   ```
 
-## Deployment 🌐
+## Deployment
 
 This project requires exactly zero backend components and is structurally optimized for static deployment on **Vercel**.
 
 1. Connect your GitHub repository to Vercel.
 2. Ensure the Framework Preset is set to **Vite**.
-3. Use the Default Build Command: \`npm run build\`
-4. The application handles route fallbacks natively using the provided \`vercel.json\`.
-
-## Project Structure 📁
-
-- \`/src/components\` - Contains modular UI parts (TopologyNode, MetricBlocks)
-- \`/src/lib\` - Utility functions, including the \`simulation.ts\` which mocks backend event cycles.
-- \`/src/types\` - Unified TypeScript interfaces for Alerts and Traces.
-- \`vercel.json\` - Handles Vercel standard SPA fallbacks.
+3. Use the Default Build Command: `npm run build`
+4. The application handles route fallbacks natively using the provided `vercel.json`.
