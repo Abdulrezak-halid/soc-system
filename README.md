@@ -2,6 +2,8 @@
 
 A frontend simulation of a ```Security Operations Center (SOC)``` dashboard. This project provides a fully static UI with simulated real-time traffic statistics and security alerts, suitable for demonstration, educational, and professional portfolio purposes.
 
+![Main Dashboard Overview](public/assets/dashboard.png)
+### **[View Live Demo](https://soc-system-omega.vercel.app/)** 👁️
 
 ## Table of Contents
 
@@ -25,9 +27,6 @@ A frontend simulation of a ```Security Operations Center (SOC)``` dashboard. Thi
 ## Visual Overview
 
 _Note: Screenshots provide immediate visual context for recruiters and reviewers. Replace the placeholders below once you take the screenshots._
-
-![Main Dashboard Overview](public/assets/dashboard.png)
-### **[View Live Demo](https://soc-system-omega.vercel.app/)** 👁️
   
   _The primary monitoring interface displaying baseline traffic and topology._
 
