@@ -1,6 +1,6 @@
 # Mini SOC System
 
-A frontend simulation of a ```Security Operations Center (SOC)``` dashboard. This project provides a fully static UI with simulated real-time traffic statistics and security alerts, suitable for demonstration, educational, and professional portfolio purposes.
+simulation of a ```Security Operations Center (SOC)``` dashboard. This project provides a fully static UI with simulated real-time traffic statistics and security alerts, suitable for demonstration, educational, and professional portfolio purposes.
 
 ### **[View Live Demo](https://soc-system-omega.vercel.app/)** 👁️
 
